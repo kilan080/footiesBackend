@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-
 const contactSchemma = new Schema(
     {
         name: {

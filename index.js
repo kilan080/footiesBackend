@@ -1,5 +1,11 @@
-import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config({
+    path: './.env'
+});
+
+import express from 'express';
+
+
 import cors from 'cors';
 import connectDB from './src/config/database.js';
 import routes from './src/routes/index.routes.js';
@@ -9,9 +15,7 @@ const app = express();
 
 const PORT = 4000;
 
-dotenv.config({
-    path: './.env'
-});
+
 
 const corsOptions = {
     origin: "http://localhost:3000",
