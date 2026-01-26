@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import  { Schema}  from "mongoose";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
-const adminSchema = new Schema = (
+const adminSchema = new Schema (
 
     {
         email: {
@@ -24,18 +24,19 @@ const adminSchema = new Schema = (
 
 //hashing of password
 adminSchema.pre("save", async function(next) {
+    console.log("next: " ,typeof next)
     if(!this.isModified("password")) {
-       return next();
+       return
     }
 
 
     this.password = await bcrypt.hash(this.password, 10);
 
-    next();
+    // next();
 });
 
 //comparing passwords
-adminSchema.methods.comparePassword = async function (enteredPassword) {
+adminSchema.methods.comparePasswords = async function (enteredPassword) {
     return bcrypt.compare(enteredPassword, this.password)
 }
 
