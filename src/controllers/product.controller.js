@@ -4,41 +4,16 @@ import { StatusCodes } from "http-status-codes";
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, category, stock, imageUrl } = req.body;
+    // At this point:
+    // - imageUrl already exists (Cloudinary)
+    // - req.body is already validated by Joi
 
-    
-    if (
-      !name ||
-      !description ||
-      price === undefined ||
-      !category ||
-      stock === undefined ||
-      !imageUrl ||
-      !Array.isArray(imageUrl) ||
-      imageUrl.length === 0
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
+    const product = await Product.create(req.body);
 
-    
-    const newProduct = new Product({
-      name,
-      description,
-      price,
-      category,
-      stock,
-      images: imageUrl,
-    });
-
-    await newProduct.save();
-
-    return res.status(201).json({
+    return res.status(StatusCodes.CREATED).json({
       success: true,
       message: "New product created successfully",
-      product: newProduct,
+      product,
     });
 
   } catch (error) {
