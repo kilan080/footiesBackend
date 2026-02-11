@@ -18,7 +18,7 @@ import routes from "./src/routes/index.routes.js";
 const app = express();
 const PORT = 4000;
 
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors({ origin: [ "http://localhost:3000", "https://footies-backend.vercel.app" ], credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
