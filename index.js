@@ -22,7 +22,10 @@ app.use(cors({ origin: [ "http://localhost:3000", "https://footies-backend.verce
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => res.sendStatus(200));
+app.get("/", (req, res) => res.sendStatus(200).json({
+  success: true,
+  message: "Welcome to Footies API ...my backend dey work ooo"
+}));
 app.use(routes);
 
 connectDB();
