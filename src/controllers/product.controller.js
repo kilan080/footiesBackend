@@ -48,6 +48,36 @@ export const getAllProducts = async (req, res) => {
   }
 }
 
+export const getAProducts = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if(!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Invalid product ID"
+      });
+    } 
+    const product = await Product.findById(id);
+
+    if (!product) {   
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
