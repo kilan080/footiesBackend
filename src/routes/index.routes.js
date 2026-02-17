@@ -11,6 +11,7 @@ router.use("/contacts", contactRoutes);
 router.use("/testimonials", testimonialRoutes);
 router.use("/admin", adminRoutes);
 router.use("/admin/products", verifyAdmin, productRoutes);
+router.use("/products", productRoutes);
 
 
 
