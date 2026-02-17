@@ -4,9 +4,6 @@ import { StatusCodes } from "http-status-codes";
 
 export const createProduct = async (req, res) => {
   try {
-    // At this point:
-    // - imageUrl already exists (Cloudinary)
-    // - req.body is already validated by Joi
 
     const product = await Product.create(req.body);
 
@@ -78,6 +75,23 @@ export const getAProducts = async (req, res) => {
   }
 }
 
+export const getAllPublicProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ status: "active" });
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      count: products.length,
+      products,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -96,7 +110,7 @@ export const updateProduct = async (req, res) => {
         message: "Product not found"
       });
     }
-    const fieldsToUpdate = ["name", "description", "price", "category", "stock", "imageUrl", "status"];
+    const fieldsToUpdate = ["name", "description", "price", "category", "stock", "images", "status"];
     fieldsToUpdate.forEach(field => {
       if (req.body[field] !== undefined) {
        product[field] = req.body[field];
