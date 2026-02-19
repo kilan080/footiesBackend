@@ -50,6 +50,13 @@ export const createAdmin = async (req, res) => {
 
 export const loginAdmin = async (req, res) => {
     try {
+
+        if (!req.body) {
+            return res.status(400).json({
+                message: "All fields are required"
+            });
+        }
+
         const { email, password } = req.body;
 
         if (!email || !password) {

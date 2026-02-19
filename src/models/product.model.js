@@ -33,10 +33,6 @@ const productSchema = new Schema (
             required: true,
             validate: [array => array.length > 0, "At least one image is required"]
         },
-        status: {
-            type: Boolean,
-            default: true
-        }
     },
     { timestamps: true }
 )
