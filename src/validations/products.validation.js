@@ -11,4 +11,4 @@ export const createProductSchema = Joi.object({
     .min(1)
     .required(),
     status:Joi.string().valid("available", "out of stock").default(true),
-}).min(1);;
+}).min(1);

@@ -27,8 +27,6 @@ export const createAdmin = async (req, res) => {
             password
         });
 
-        console.log("admin created")
-        console.log("saving admin")
         await admin.save()
         console.log("admin saved")
         return res.status(201).json({
