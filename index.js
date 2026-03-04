@@ -18,12 +18,13 @@ import routes from "./src/routes/index.routes.js";
 const app = express();
 const PORT = 4000;
 
-app.use(cors({ origin: [ "http://localhost:5173", "https://footies-backend.vercel.app" ], credentials: true }));
+app.use(cors({ origin: [ "http://localhost:3000", "https://footies-backend.vercel.app" ], credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => res.sendStatus(200).json({
   success: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   message: "Welcome to Footies API ...my backend dey work ooo"
 }));
 app.use(routes);
