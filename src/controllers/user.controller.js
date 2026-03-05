@@ -150,3 +150,78 @@ export const userProfile = async (req, res) => {
         })
     }
 }
+
+export const updateUserProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { firstName, lastName, phone, addresses} = req.body;
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { firstName, lastName, phone, addresses},
+            { new: true}
+        ).select("-password");
+
+        if(!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "User not found",
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "User profile updated successfully",
+            user,
+        })
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Internal server error",
+        })
+    }
+}
+
+export const changePassword = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { currentPassword, newPassword} = req.body;
+        if(!currentPassword || !newPassword) {
+            return res.status(StatusCodes.BAD_REQUEST).JSON({
+                success: false,
+                message: "All fields are required",
+            })
+        }
+
+        const user = await User.findById(userId);
+        if(!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "User not found",
+            })
+        }
+
+        const isMatch = await user.comparePasswords(currentPassword);
+        if(!isMatch) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: "Current password is incorrect",
+            })
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Password changed successfully",
+        })
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).JSON({
+            SUCCESS: FALSE,
+            MESSAGE: "Internal server error",
+        })
+    }
+}
