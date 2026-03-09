@@ -11,7 +11,7 @@ export const createOrder = async (req, res) => {
         }
         const {items, subtotal, deliveryFee, total, deliveryInfo, paymentMethod} = req.body;
 
-        if(!items || !subtotal || !deliveryFee || !total || !deliveryInfo || !paymentMethod) {
+        if(!items || !subtotal || !deliveryFee || !total === undefined || !deliveryInfo || !paymentMethod) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "All fields are required to create an order"
