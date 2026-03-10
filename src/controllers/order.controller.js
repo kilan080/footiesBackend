@@ -1,4 +1,5 @@
 import { Order } from "../models/order.model.js";
+import { Product } from "../models/product.model.js";
 import { StatusCodes } from "http-status-codes";
 
 export const createOrder = async (req, res) => {
@@ -17,8 +18,34 @@ export const createOrder = async (req, res) => {
                 message: "All fields are required to create an order"
             })
         }
+
+        // Check stock availability before creating order
+        for (const item of items) {
+            const product = await Product.findById(item.productId);
+            if (!product) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    success: false,
+                    message: `Product ${item.name} no longer exists`,
+                });
+            }
+            if (product.stock < item.quantity) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: `Insufficient stock for ${product.name}. Only ${product.stock} left.`,
+                });
+            }
+        }
+
         const userId = req.user.id;
         const order = await Order.create({userId, items, subtotal, deliveryFee, total, deliveryInfo, paymentMethod});
+
+        // Reduce stock for each product
+        for (const item of items) {
+            await Product.findByIdAndUpdate(
+                item.productId,
+                { $inc: { stock: -item.quantity } }
+            );
+        }
 
         return res.status(StatusCodes.CREATED).json({
             success: true,
@@ -27,10 +54,10 @@ export const createOrder = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("CREATE ORDER ERROR:", error.message);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
-            message: "Internal Server Error"
+            message: error.message
         });
     }
 }
