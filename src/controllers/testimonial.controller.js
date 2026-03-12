@@ -30,7 +30,7 @@ export const createTestimonial = async (req, res) => {
 
 export const getTestimonials = async (req, res) => {
     try {
-        const testimonial = await Testimonial.find().sort({ createdAt: -1});
+        const testimonial = await Testimonial.find().limit(6).sort({ createdAt: -1});
         res.json(testimonial);
     } catch (error) {
         res.status(500).json({
