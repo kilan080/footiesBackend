@@ -1,5 +1,7 @@
 import { Admin } from '../models/admin.model.js';
-import jwt from "jsonwebtoken";  
+import jwt from "jsonwebtoken"; 
+import { User } from "../models/user.model.js";
+import { StatusCodes } from "http-status-codes";
 
 export const createAdmin = async (req, res) => {
     try {
@@ -128,3 +130,18 @@ export const adminProfile = async (req, res) => {
         });
     }
 };
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({}).select('-password')
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            users,
+        });
+    } catch (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: "Internal server error"
+        })
+    }
+}
