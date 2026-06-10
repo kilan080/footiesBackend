@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import  { Schema}  from "mongoose";
+import { Schema } from "mongoose";
 
 const orderItemSchema = new mongoose.Schema(
     {
@@ -25,7 +25,7 @@ const orderItemSchema = new mongoose.Schema(
             required: true,
             min: [1, "Quantity must be atleast 1"]
         }
-        
+
     }
 )
 
@@ -81,8 +81,12 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ["paid", "unpaid"],
-        default: "unpaid"
+        enum: ["paid", "pending",],
+        default: "pending"
+    },
+    paymentReference: {
+        type: String,
+        default: null,
     }
 }, { timestamps: true })
 

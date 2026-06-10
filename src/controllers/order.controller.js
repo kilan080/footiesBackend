@@ -2,21 +2,64 @@ import { Order } from "../models/order.model.js";
 import { Product } from "../models/product.model.js";
 import { StatusCodes } from "http-status-codes";
 
+const verifyPaystackPayment = async (reference, expectedAmount) => {
+    const response = await fetch(
+        `https://api.paystack.co/transaction/verify/${reference}`,
+        {
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+            }
+        }
+    )
+    const data = await response.json();
+
+    if (!data.status || data.data.status !== "success") {
+        throw new Error("Payment verification failed. Transaction was not sucessful");
+    }
+
+    const paidAmountKobo = data.data.amount;
+    const expectedAmountKobo = expectedAmount * 100;
+
+    if (paidAmountKobo < expectedAmountKobo - 100) {
+        throw new Error(`Payment amount mismatch. Expected ₦${expectedAmount}, got ₦${paidAmountKobo / 100}.`)
+    }
+
+    return data.data;
+}
+
 export const createOrder = async (req, res) => {
     try {
-        if(!req.body) {
+        if (!req.body) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "A request body is required to create an order"
             })
         }
-        const {items, subtotal, deliveryFee, total, deliveryInfo, paymentMethod} = req.body;
+        const { items, subtotal, deliveryFee, total, deliveryInfo, paymentMethod, paymentReference, paymentStatus } = req.body;
 
-        if(!items || !subtotal || !deliveryFee || !total === undefined || !deliveryInfo || !paymentMethod) {
+        if (!items || !subtotal || !deliveryFee || !total === undefined || !deliveryInfo || !paymentMethod) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "All fields are required to create an order"
             })
+        }
+
+        if (paymentMethod === "card") {
+            if (!paymentReference) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "Payment reference is required for card payments."
+                });
+            }
+
+            try {
+                await verifyPaystackPayment(paymentReference, total);
+            } catch (err) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: err.message,
+                });
+            }
         }
 
         // Check stock availability before creating order
@@ -37,7 +80,7 @@ export const createOrder = async (req, res) => {
         }
 
         const userId = req.user.id;
-        const order = await Order.create({userId, items, subtotal, deliveryFee, total, deliveryInfo, paymentMethod});
+        const order = await Order.create({ userId, items, subtotal, deliveryFee, total, deliveryInfo, paymentMethod, paymentStatus: paymentMethod === "card" ? "paid" : "pending", paymentReference: paymentReference ?? null });
 
         // Reduce stock for each product
         for (const item of items) {
@@ -86,9 +129,9 @@ export const getSingleOrder = async (req, res) => {
         const userId = req.user.id;
         const { id } = req.params;
 
-        const order = await Order.findOne({_id: id, userId});
+        const order = await Order.findOne({ _id: id, userId });
 
-        if(!order) {
+        if (!order) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 success: false,
                 message: "Order not found",
@@ -111,18 +154,18 @@ export const getSingleOrder = async (req, res) => {
 export const cancelOrder = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { id } =req.params;
+        const { id } = req.params;
 
         const order = await Order.findOne({ _id: id, userId });
 
-        if (!order)  {
+        if (!order) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 success: false,
                 message: "Order not found",
             })
         }
 
-        if(order.status !== "pending") {
+        if (order.status !== "pending") {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "Only pending orders can be cancelled",
